@@ -1,1 +1,1 @@
-# 2022_AI_FINAL_PROJECT
+# Chinese Checkers AI
