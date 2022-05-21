@@ -1,4 +1,4 @@
-from engine_2 import *
+from util import *
 import copy
 
 player1_set, player2_set, player3_set = build_sets()

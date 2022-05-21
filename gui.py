@@ -24,99 +24,99 @@ V_SPACING = 1
 WINDOW_WIDTH = (H_MARGIN_DISTANCE * 2) + (CIRCLE_DIAMETER * 13) + (H_SPACING * 12)
 WINDOW_HEIGHT = (V_MARGIN_DISTANCE * 2) + (CIRCLE_DIAMETER * 17) + (V_SPACING * 16)
 
+class Display_surface:
+    def __init__(self):
+        self.display_surface = self.init_board()
 
-def init_board():
-    pg.init()
-    display_surface = pg.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    pg.display.set_caption('Chinese Checkers AI')
-    return display_surface
+    def init_board(self):
+        pg.init()
+        display_surface = pg.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        pg.display.set_caption('Chinese Checkers AI')
+        return display_surface
 
+    def draw_board(self,board):
 
-def draw_board(board, display_surface):
+        self.display_surface.fill(BACKGROUND)
 
-    display_surface.fill(BACKGROUND)
+        y_coord = V_MARGIN_DISTANCE + CIRCLE_RADIUS
 
-    y_coord = V_MARGIN_DISTANCE + CIRCLE_RADIUS
+        destinations = [[2, 0], [0, 8], [2, 24], [14, 24], [16, 16], [14, 0]]
 
-    destinations = [[2, 0], [0, 8], [2, 24], [14, 24], [16, 16], [14, 0]]
+        for row in range(0, 17):
 
-    for row in range(0, 17):
+            x_coord_long = H_MARGIN_DISTANCE + CIRCLE_RADIUS
+            x_coord_short = int(H_MARGIN_DISTANCE + CIRCLE_DIAMETER + (H_SPACING / 2))
 
-        x_coord_long = H_MARGIN_DISTANCE + CIRCLE_RADIUS
-        x_coord_short = int(H_MARGIN_DISTANCE + CIRCLE_DIAMETER + (H_SPACING / 2))
+            for circle_in_a_row in range(0, 13):
+                if row % 2 == 0:
 
-        for circle_in_a_row in range(0, 13):
-            if row % 2 == 0:
+                    board_value = board[row][circle_in_a_row * 2]
+                    if [row, circle_in_a_row * 2] in destinations:
+                        #color_destination(self.display_surface, x_coord_long, y_coord, row, circle_in_a_row, destinations)
+                        self.color_destination( x_coord_long, y_coord, row, circle_in_a_row, destinations)
+                    else:
+                        #color_circle(board_value, self.display_surface, x_coord_long, y_coord)
+                        self.color_circle(board_value, x_coord_long, y_coord)
 
-                board_value = board[row][circle_in_a_row * 2]
-                if [row, circle_in_a_row * 2] in destinations:
-                    color_destination(display_surface, x_coord_long, y_coord, row, circle_in_a_row, destinations)
-                else:
-                    color_circle(board_value, display_surface, x_coord_long, y_coord)
+                    x_coord_long = x_coord_long + CIRCLE_DIAMETER + H_SPACING
 
-                x_coord_long = x_coord_long + CIRCLE_DIAMETER + H_SPACING
+                elif row % 2 != 0 and circle_in_a_row != 12:
 
-            elif row % 2 != 0 and circle_in_a_row != 12:
+                    board_value = board[row][circle_in_a_row * 2 + 1]
+                    self.color_circle(board_value, x_coord_short, y_coord)
 
-                board_value = board[row][circle_in_a_row * 2 + 1]
-                color_circle(board_value, display_surface, x_coord_short, y_coord)
+                    x_coord_short = x_coord_short + CIRCLE_DIAMETER + H_SPACING
 
-                x_coord_short = x_coord_short + CIRCLE_DIAMETER + H_SPACING
+            y_coord = y_coord + CIRCLE_DIAMETER + V_SPACING
 
-        y_coord = y_coord + CIRCLE_DIAMETER + V_SPACING
+    def color_circle(self, board_value, x_coord, y_coord):
 
+        if board_value == -1:
+            pg.draw.circle(self.display_surface, BACKGROUND, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        if board_value == 0:
+            pg.draw.circle(self.display_surface, EMPTY_CELL, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        if board_value == 1:
+            pg.draw.circle(self.display_surface, PLAYER1_RED, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        if board_value == 2:
+            pg.draw.circle(self.display_surface, PLAYER2_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        if board_value == 3:
+            pg.draw.circle(self.display_surface, PLAYER3_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        '''
+        if board_value == 4:
+            pg.draw.circle(display_surface, PLAYER4_BLUE, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        if board_value == 5:
+            pg.draw.circle(display_surface, PLAYER5_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        if board_value == 6:
+            pg.draw.circle(display_surface, PLAYER6_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+        '''
 
-def color_circle(board_value, display_surface, x_coord, y_coord):
+    def color_destination(self, x_coord_long, y_coord, row, circle_in_a_row, destinations):
 
-    if board_value == -1:
-        pg.draw.circle(display_surface, BACKGROUND, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    if board_value == 0:
-        pg.draw.circle(display_surface, EMPTY_CELL, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    if board_value == 1:
-        pg.draw.circle(display_surface, PLAYER1_RED, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    if board_value == 2:
-        pg.draw.circle(display_surface, PLAYER2_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    if board_value == 3:
-        pg.draw.circle(display_surface, PLAYER3_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    '''
-    if board_value == 4:
-        pg.draw.circle(display_surface, PLAYER4_BLUE, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    if board_value == 5:
-        pg.draw.circle(display_surface, PLAYER5_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    if board_value == 6:
-        pg.draw.circle(display_surface, PLAYER6_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-    '''
+        if [row, circle_in_a_row * 2] == destinations[2]:
+            pg.draw.circle(self.display_surface, PLAYER3_YELLOW, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+        #if [row, circle_in_a_row * 2] == destinations[1]:
+        #    pg.draw.circle(display_surface, PLAYER4_BLUE, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+        #if [row, circle_in_a_row * 2] == destinations[2]:
+        #    pg.draw.circle(display_surface, PLAYER5_GREEN, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+        #if [row, circle_in_a_row * 2] == destinations[3]:
+        #    pg.draw.circle(display_surface, PLAYER6_YELLOW, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+        if [row, circle_in_a_row * 2] == destinations[4]:
+            pg.draw.circle(self.display_surface, PLAYER1_RED, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+        if [row, circle_in_a_row * 2] == destinations[0]:
+            pg.draw.circle(self.display_surface, PLAYER2_GREEN, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
 
+    def highlight_best_move(self, best_move):
 
-def color_destination(display_surface, x_coord_long, y_coord, row, circle_in_a_row, destinations):
+        [start_x, start_y] = best_move[0]
+        [end_x, end_y] = best_move[1]
 
-    if [row, circle_in_a_row * 2] == destinations[2]:
-        pg.draw.circle(display_surface, PLAYER3_YELLOW, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
-    #if [row, circle_in_a_row * 2] == destinations[1]:
-    #    pg.draw.circle(display_surface, PLAYER4_BLUE, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
-    #if [row, circle_in_a_row * 2] == destinations[2]:
-    #    pg.draw.circle(display_surface, PLAYER5_GREEN, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
-    #if [row, circle_in_a_row * 2] == destinations[3]:
-    #    pg.draw.circle(display_surface, PLAYER6_YELLOW, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
-    if [row, circle_in_a_row * 2] == destinations[4]:
-        pg.draw.circle(display_surface, PLAYER1_RED, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
-    if [row, circle_in_a_row * 2] == destinations[0]:
-        pg.draw.circle(display_surface, PLAYER2_GREEN, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+        circle_start_x, circle_start_y = find_circle_from(start_x, start_y)
+        pg.draw.ellipse(self.display_surface, HIGHLIGHT, (circle_start_x - CIRCLE_RADIUS, circle_start_y - CIRCLE_RADIUS,
+                                                    CIRCLE_DIAMETER, CIRCLE_DIAMETER), 5)
 
-
-def highlight_best_move(best_move, display_surface):
-
-    [start_x, start_y] = best_move[0]
-    [end_x, end_y] = best_move[1]
-
-    circle_start_x, circle_start_y = find_circle_from(start_x, start_y)
-    pg.draw.ellipse(display_surface, HIGHLIGHT, (circle_start_x - CIRCLE_RADIUS, circle_start_y - CIRCLE_RADIUS,
-                                                 CIRCLE_DIAMETER, CIRCLE_DIAMETER), 5)
-
-    circle_end_x, circle_end_y = find_circle_from(end_x, end_y)
-    pg.draw.ellipse(display_surface, HIGHLIGHT, (circle_end_x - CIRCLE_RADIUS, circle_end_y - CIRCLE_RADIUS,
-                                                 CIRCLE_DIAMETER, CIRCLE_DIAMETER), 5)
-
+        circle_end_x, circle_end_y = find_circle_from(end_x, end_y)
+        pg.draw.ellipse(self.display_surface, HIGHLIGHT, (circle_end_x - CIRCLE_RADIUS, circle_end_y - CIRCLE_RADIUS,
+                                                    CIRCLE_DIAMETER, CIRCLE_DIAMETER), 5)
 
 def find_circle_from(x, y):
 
@@ -128,6 +128,105 @@ def find_circle_from(x, y):
     circle_y = V_MARGIN_DISTANCE + CIRCLE_RADIUS + (CIRCLE_DIAMETER + V_SPACING) * x
 
     return circle_x, circle_y
+
+
+
+
+
+# def init_board():
+#     pg.init()
+#     display_surface = pg.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+#     pg.display.set_caption('Chinese Checkers AI')
+#     return display_surface
+
+
+# def draw_board(board, display_surface):
+
+#     display_surface.fill(BACKGROUND)
+
+#     y_coord = V_MARGIN_DISTANCE + CIRCLE_RADIUS
+
+#     destinations = [[2, 0], [0, 8], [2, 24], [14, 24], [16, 16], [14, 0]]
+
+#     for row in range(0, 17):
+
+#         x_coord_long = H_MARGIN_DISTANCE + CIRCLE_RADIUS
+#         x_coord_short = int(H_MARGIN_DISTANCE + CIRCLE_DIAMETER + (H_SPACING / 2))
+
+#         for circle_in_a_row in range(0, 13):
+#             if row % 2 == 0:
+
+#                 board_value = board[row][circle_in_a_row * 2]
+#                 if [row, circle_in_a_row * 2] in destinations:
+#                     color_destination(display_surface, x_coord_long, y_coord, row, circle_in_a_row, destinations)
+#                 else:
+#                     color_circle(board_value, display_surface, x_coord_long, y_coord)
+
+#                 x_coord_long = x_coord_long + CIRCLE_DIAMETER + H_SPACING
+
+#             elif row % 2 != 0 and circle_in_a_row != 12:
+
+#                 board_value = board[row][circle_in_a_row * 2 + 1]
+#                 color_circle(board_value, display_surface, x_coord_short, y_coord)
+
+#                 x_coord_short = x_coord_short + CIRCLE_DIAMETER + H_SPACING
+
+#         y_coord = y_coord + CIRCLE_DIAMETER + V_SPACING
+
+
+# def color_circle(board_value, display_surface, x_coord, y_coord):
+
+#     if board_value == -1:
+#         pg.draw.circle(display_surface, BACKGROUND, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     if board_value == 0:
+#         pg.draw.circle(display_surface, EMPTY_CELL, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     if board_value == 1:
+#         pg.draw.circle(display_surface, PLAYER1_RED, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     if board_value == 2:
+#         pg.draw.circle(display_surface, PLAYER2_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     if board_value == 3:
+#         pg.draw.circle(display_surface, PLAYER3_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     '''
+#     if board_value == 4:
+#         pg.draw.circle(display_surface, PLAYER4_BLUE, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     if board_value == 5:
+#         pg.draw.circle(display_surface, PLAYER5_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     if board_value == 6:
+#         pg.draw.circle(display_surface, PLAYER6_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
+#     '''
+
+
+# def color_destination(display_surface, x_coord_long, y_coord, row, circle_in_a_row, destinations):
+
+#     if [row, circle_in_a_row * 2] == destinations[2]:
+#         pg.draw.circle(display_surface, PLAYER3_YELLOW, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+#     #if [row, circle_in_a_row * 2] == destinations[1]:
+#     #    pg.draw.circle(display_surface, PLAYER4_BLUE, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+#     #if [row, circle_in_a_row * 2] == destinations[2]:
+#     #    pg.draw.circle(display_surface, PLAYER5_GREEN, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+#     #if [row, circle_in_a_row * 2] == destinations[3]:
+#     #    pg.draw.circle(display_surface, PLAYER6_YELLOW, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+#     if [row, circle_in_a_row * 2] == destinations[4]:
+#         pg.draw.circle(display_surface, PLAYER1_RED, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+#     if [row, circle_in_a_row * 2] == destinations[0]:
+#         pg.draw.circle(display_surface, PLAYER2_GREEN, (x_coord_long, y_coord), CIRCLE_RADIUS, 0)
+
+
+# def highlight_best_move(best_move, display_surface):
+
+#     [start_x, start_y] = best_move[0]
+#     [end_x, end_y] = best_move[1]
+
+#     circle_start_x, circle_start_y = find_circle_from(start_x, start_y)
+#     pg.draw.ellipse(display_surface, HIGHLIGHT, (circle_start_x - CIRCLE_RADIUS, circle_start_y - CIRCLE_RADIUS,
+#                                                  CIRCLE_DIAMETER, CIRCLE_DIAMETER), 5)
+
+#     circle_end_x, circle_end_y = find_circle_from(end_x, end_y)
+#     pg.draw.ellipse(display_surface, HIGHLIGHT, (circle_end_x - CIRCLE_RADIUS, circle_end_y - CIRCLE_RADIUS,
+#                                                  CIRCLE_DIAMETER, CIRCLE_DIAMETER), 5)
+
+
+
 
 
 
