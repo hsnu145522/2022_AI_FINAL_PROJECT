@@ -3,8 +3,7 @@ import copy
 
 player1_set, player2_set, player3_set = build_sets()
 player1_obj, player2_obj, player3_obj = build_obj_sets()
-player1_inv_homes, player2_inv_homes, player3_inv_homes = \
-    build_invalid_homes_sets(player1_set, player2_set, player3_set, player1_obj, player2_obj, player3_obj)
+player1_inv_homes, player2_inv_homes, player3_inv_homes = build_invalid_homes_sets(player1_set, player2_set, player3_set, player1_obj, player2_obj, player3_obj)
 
 
 def alphabeta(board, depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta):
@@ -45,28 +44,21 @@ def alphabeta(board, depth, player, first_player, player1_set, player2_set, play
 
             scores.append(score)
             moves.append(move)
-            # print('- player', player, 'depth', depth, '- move', move, 'score', score)
-            # print('---- scores:', scores)
-            # print('---- moves:', moves)
+            
 
             alpha = max(score, alpha)
             if beta <= alpha:
-                # print('--------------------- node skipped - alpha', alpha, '- beta', beta)
                 break
 
         if len(scores) == 0:
             return
         max_score_index = scores.index(max(scores))
         best_move = moves[max_score_index]
-        # print('- player', player, '- best move', best_move, '. score', max(scores), '. at index', max_score_index)
         return scores[max_score_index], best_move
 
     else:
 
         for move in valid_moves:
-
-            # print('--- player', player, "set:", set_pieces)
-            # print('- player', player, "- move:", move)
 
             board_copy_again = copy.copy(board_copy)
             new_board, new_set_pieces = do_move(board_copy_again, move, set_pieces)
@@ -83,21 +75,16 @@ def alphabeta(board, depth, player, first_player, player1_set, player2_set, play
 
             scores.append(score)
             moves.append(move)
-            #print('- player', player, 'depth', depth, '- move', move, 'score', score)
-            #print('---- scores:', scores)
-            #print('---- moves:', moves)
+            
 
             beta = min(score, beta)
             if beta <= alpha:
-                # print('----------------------------- node skipped', alpha, '- beta', beta)
                 break
 
         if len(scores) == 0:
             return
         min_score_index = scores.index(min(scores))
         worst_opponent_move = moves[min_score_index]
-        #print('- player', player, '- worst opponent move', worst_opponent_move, '. score', min(scores), '. at index',
-        #     min_score_index)
 
         return scores[min_score_index], worst_opponent_move
 
@@ -105,17 +92,8 @@ def alphabeta(board, depth, player, first_player, player1_set, player2_set, play
 def calculate_board_score(player_turn, p1_pieces, p2_pieces, p3_pieces):
 
     p1_avg_distance = find_avg_distance(p1_pieces, player1_obj, 16, 12)
-    # print("-- avg distance p1", p1_avg_distance)
     p2_avg_distance = find_avg_distance(p2_pieces, player2_obj, 12, 0)
-    #print("-- avg distance p2", p2_avg_distance)
     p3_avg_distance = find_avg_distance(p3_pieces, player3_obj, 4, 0)
-    #print("-- avg distance p3", p3_avg_distance)
-    #p4_avg_distance = find_avg_distance(p4_pieces, player4_obj, 0, 12)
-    #print("-- avg distance p4", p4_avg_distance)
-    #p5_avg_distance = find_avg_distance(p5_pieces, player5_obj, 4, 24)
-    #print("-- avg distance p5", p5_avg_distance)
-    #p6_avg_distance = find_avg_distance(p6_pieces, player6_obj, 12, 24)
-    #print("-- avg distance p6", p6_avg_distance)
 
     score = calculate_score(player_turn, p1_avg_distance, p2_avg_distance, p3_avg_distance)
 
@@ -166,33 +144,7 @@ def calculate_score(player_turn, p1_avg_distance, p2_avg_distance, p3_avg_distan
         pturn_avg_distance = p3_avg_distance
         score = ((p2_avg_distance - pturn_avg_distance) +
                  (p1_avg_distance - pturn_avg_distance)) / 2
-    '''
-    elif player_turn == 4:
-        # print("-- loop player 4")
-        pturn_avg_distance = p4_avg_distance
-        score = ((p2_avg_distance - pturn_avg_distance) +
-                 (p3_avg_distance - pturn_avg_distance) +
-                 (p1_avg_distance - pturn_avg_distance) +
-                 (p5_avg_distance - pturn_avg_distance) +
-                 (p6_avg_distance - pturn_avg_distance)) / 5
-    elif player_turn == 5:
-        # print("-- loop player 5")
-        pturn_avg_distance = p5_avg_distance
-        score = ((p2_avg_distance - pturn_avg_distance) +
-                 (p3_avg_distance - pturn_avg_distance) +
-                 (p4_avg_distance - pturn_avg_distance) +
-                 (p1_avg_distance - pturn_avg_distance) +
-                 (p6_avg_distance - pturn_avg_distance)) / 5
-    elif player_turn == 6:
-        # print("-- loop player 6")
-        pturn_avg_distance = p6_avg_distance
-        score = ((p2_avg_distance - pturn_avg_distance) +
-                 (p3_avg_distance - pturn_avg_distance) +
-                 (p4_avg_distance - pturn_avg_distance) +
-                 (p5_avg_distance - pturn_avg_distance) +
-                 (p1_avg_distance - pturn_avg_distance)) / 5
-    '''
-
+    
     return score
 
 

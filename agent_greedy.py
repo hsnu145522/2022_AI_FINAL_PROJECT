@@ -23,7 +23,6 @@ def greedy(board, all_legal_moves, obj_set, player_turn):
 
             [obj_x, obj_y] = obj
 
-            # trasform y coord thinking about the board as a square, which it should be
             square_start_y = (start_y * 14.43) / 25
             square_end_y = (end_y * 14.43) / 25
             square_obj_y = (obj_y * 14.43) / 25

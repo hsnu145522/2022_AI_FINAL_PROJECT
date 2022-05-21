@@ -50,11 +50,8 @@ def find_best_move(board, all_legal_moves, obj_set, player_turn, set_pieces, pla
 
 def check_win(set_pieces, obj_set):
 
-    game_end = True
-
     for piece in set_pieces:
         if piece not in obj_set:
-            game_end = False
+            return False
 
-
-    return game_end
+    return True

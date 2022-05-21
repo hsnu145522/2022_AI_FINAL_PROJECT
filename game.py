@@ -12,23 +12,25 @@ import random
 from action import *
 from util import *
 from gui import Display_surface
-from agent import Agent
+from agents import GreedyAgent
+from agents import AlphaBetaAgent
 import argparse
 
 
 next_move = USEREVENT + 1
-restart_game = USEREVENT + 2
 
 class CheckerGame:
     def __init__(self, auto=False):
-        self.p1 = Agent(1)
-        self.p2 = Agent(2)
-        self.p3 = Agent(3)
-        self.reset(auto)
-
-    def reset(self, auto):
-        self.p1.set, self.p2.set, self.p3.set = build_sets()
+        self.p1 = AlphaBetaAgent(depth=1)
+        self.p2 = AlphaBetaAgent(depth=2)
+        self.p3 = GreedyAgent()
         self.p1.obj, self.p2.obj, self.p3.obj = build_obj_sets()
+        self.total = 0
+        self.auto = auto
+        self.reset()
+
+    def reset(self):
+        self.p1.set, self.p2.set, self.p3.set = build_sets()
         self.p1.invalid, self.p2.invalid, self.p3.invalid = build_invalid_homes_sets(self.p1.set, self.p2.set, self.p3.set, self.p1.obj, self.p2.obj, self.p3.obj)
 
         self.board = build_board()
@@ -46,22 +48,36 @@ class CheckerGame:
         self.first_round = True
         self.save_first_p = 100
 
-        self.auto = auto
+        event = pg.event.Event(next_move)
+        pg.event.post(event)
+
+    def check_win(self, set_pieces, obj_set):
+
+        for piece in set_pieces:
+            if piece not in obj_set:
+                return False
+        return True
+
+    def choose_action(self, legal_moves):
+        if self.player_turn == 1:
+            return self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+        elif self.player_turn == 2:
+            return self.p2.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+        elif self.player_turn == 3:
+            return self.p3.choose_action(self.board, legal_moves)
 
     def run(self):
         while True:
-            #draw_board(self.board, self.display_surface)
             self.display_surface.draw_board(self.board)
             for event in pg.event.get():
-                if event.type == QUIT:
+                if event.type == QUIT or (event.type == pg.KEYDOWN and event.key == ord("q")):
                     pg.quit()
                     sys.exit()
-                elif event.type == restart_game or (event.type == pg.KEYDOWN and event.key == ord("r")):
-                    self.reset(self.auto)
-                    event = pg.event.Event(next_move)
-                    pg.event.post(event)
-                elif ((self.auto and event.type == next_move) or (event.type == pg.KEYDOWN and event.key == ord("a"))) and not self.game_over:
-                    # pg.time.wait(100)
+
+                elif event.type == pg.KEYDOWN and event.key == ord("r"):
+                    self.reset()
+
+                elif not self.game_over and (event.type == next_move or (event.type == pg.KEYDOWN and event.key == ord("a"))):
                     # change player turn
                     self.player_turn += 1
                     if self.player_turn == 4:
@@ -74,37 +90,38 @@ class CheckerGame:
                         self.save_first_p = self.player_turn
                         self.first_turn = False
 
-                    # print("Player", self.player_turn)
-
                     # consider the pieces of the player of this turn
                     set_pieces = assign_set(self.player_turn, self.p1.set, self.p2.set, self.p3.set)
-
                     # identify homes of the player of this turn
-                    invalid_homes_set = assign_invalid_homes_set(self.player_turn, self.p1.invalid,
-                                                                self.p2.invalid, self.p3.invalid)
-
+                    invalid_homes_set = assign_invalid_homes_set(self.player_turn, self.p1.invalid, self.p2.invalid, self.p3.invalid)
                     # assign objective set of positions
                     obj_set = assign_obj_set(self.player_turn, self.p1.obj, self.p2.obj, self.p3.obj)
-
                     # find all legal moves given a piece set of a player
                     all_legal_moves = find_all_legal_moves(self.board, set_pieces, obj_set, invalid_homes_set)
+
+                    # last step
+                    last_pair = [i for i in set_pieces + obj_set if i not in set_pieces or i not in obj_set]
 
                     # choose the best move
                     if self.first_round:
                         best_move_index = random.randint(0, len(all_legal_moves) - 1)
                         best_move = all_legal_moves[best_move_index]
+
+                    elif len(last_pair) == 2:
+                        best_move = None
+                        for start, end in all_legal_moves:
+                            if start == last_pair[0] and end == last_pair[1]:
+                                best_move = [start, end]
+                        if best_move is None:
+                            best_move = self.choose_action(all_legal_moves)
                     else:
-                        best_move = find_best_move(self.board, all_legal_moves, obj_set, self.player_turn, set_pieces,
-                                                self.p1.set, self.p2.set, self.p3.set)
-                    # print("player:", player_turn, "best move:", best_move)
-
+                        best_move = self.choose_action(all_legal_moves)
+                        
                     if best_move is None:
-
                         self.game_over = True
                         self.stuck_counter = self.stuck_counter + 1
                         print('Game stuck counter:', self.stuck_counter)
                         print('[]------------------[]')
-
                         break
 
                     # highlight the move chosen
@@ -119,29 +136,28 @@ class CheckerGame:
                         update_player_set(set_pieces, self.player_turn, self.p1.set, self.p2.set, self.p3.set)
 
                     # check if the player has won
-                    self.game_over = check_win(set_pieces, obj_set)
+                    self.game_over = self.check_win(set_pieces, obj_set)
 
                     if self.game_over:
                         if self.player_turn == 1:
                             self.p1.win_cnt += 1
-                        if self.player_turn == 2:
+                        elif self.player_turn == 2:
                             self.p2.win_cnt += 1
-                        if self.player_turn == 3:
+                        elif self.player_turn == 3:
                             self.p3.win_cnt += 1
 
-                        total = self.p1.win_cnt + self.p2.win_cnt + self.p3.win_cnt
-                        print('Player 1 wins:', self.p1.win_cnt, 'rate:', round(self.p1.win_cnt / total, 3))
-                        print('Player 2 wins:', self.p2.win_cnt, 'rate:', round(self.p2.win_cnt / total, 3))
-                        print('Player 3 wins:', self.p3.win_cnt, 'rate:', round(self.p3.win_cnt / total, 3))
-                        print('total games played:', total)
+                        self.total += 1
+                        print('Player 1(R) wins:', self.p1.win_cnt, f'({round(100 * self.p1.win_cnt / self.total, 3)}%)')
+                        print('Player 2(G) wins:', self.p2.win_cnt, f'({round(100 * self.p2.win_cnt / self.total, 3)}%)')
+                        print('Player 3(Y) wins:', self.p3.win_cnt, f'({round(100 * self.p3.win_cnt / self.total, 3)}%)')
+                        print('total games played:', self.total)
                         print('[]------------------[]')
 
-                        event = pg.event.Event(restart_game)
+                        self.reset()
+
+                    elif self.auto:
+                        event = pg.event.Event(next_move)
                         pg.event.post(event)
-                    else:
-                        if self.auto:
-                            event = pg.event.Event(next_move)
-                            pg.event.post(event)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

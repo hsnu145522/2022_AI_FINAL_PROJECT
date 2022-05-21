@@ -175,17 +175,11 @@ def build_invalid_set():
     player1_i_set = [[13, 9], [13, 11], [13, 13], [13, 15], [14, 10], [14, 12], [14, 14]]
     player2_i_set = [[4, 4], [4, 6], [5, 3], [5, 5], [6, 2], [6, 4], [7, 3]]
     player3_i_set = [[4, 18], [4, 20], [5, 19], [5, 21], [6, 20], [6, 22], [7, 21]]
-    #player4_i_set = [[2, 10], [2, 12], [2, 14], [3, 9], [3, 11], [3, 13], [3, 15]]
-    #player5_i_set = [[4, 18], [4, 20], [5, 19], [5, 21], [6, 20], [6, 22], [7, 21]]
-    #player6_i_set = [[9, 21], [10, 20], [10, 22], [11, 19], [11, 21], [12, 18], [12, 20]]
-
+    
     return player1_i_set, player2_i_set, player3_i_set# player4_i_set, player5_i_set, player6_i_set
 
 
-def assign_invalid_set(player_turn, player1_i_set, player2_i_set, player3_i_set):#player4_i_set, player5_i_set,
-                       #player6_i_set):
-
-    invalid_set = player1_i_set
+def assign_invalid_set(player_turn, player1_i_set, player2_i_set, player3_i_set):
 
     if player_turn == 1:
         invalid_set = player1_i_set
@@ -193,12 +187,6 @@ def assign_invalid_set(player_turn, player1_i_set, player2_i_set, player3_i_set)
         invalid_set = player2_i_set
     if player_turn == 3:
         invalid_set = player3_i_set
-    #if player_turn == 4:
-    #    invalid_set = player4_i_set
-    #if player_turn == 5:
-    #    invalid_set = player5_i_set
-    #if player_turn == 6:
-    #    invalid_set = player6_i_set
 
     return invalid_set
 
@@ -210,10 +198,7 @@ def build_sets():
     player1_set = [[0, 12], [1, 11], [1, 13], [2, 10], [2, 12], [2, 14], [3, 9], [3, 11], [3, 13], [3, 15]]
     player2_set = [[9, 21], [10, 20], [10, 22], [11, 19], [11, 21], [11, 23], [12, 18], [12, 20], [12, 22], [12, 24]]
     player3_set = [[9, 3], [10, 2], [10, 4], [11, 1], [11, 3], [11, 5], [12, 0], [12, 2], [12, 4], [12, 6]]
-    #player4_set = [[13, 9], [13, 11], [13, 13], [13, 15], [14, 10], [14, 12], [14, 14], [15, 11], [15, 13], [16, 12]]
-    #player5_set = [[9, 3], [10, 2], [10, 4], [11, 1], [11, 3], [11, 5], [12, 0], [12, 2], [12, 4], [12, 6]]
-    #player6_set = [[4, 0], [4, 2], [4, 4], [4, 6], [5, 1], [5, 3], [5, 5], [6, 2], [6, 4], [7, 3]]
-
+    
     return player1_set, player2_set, player3_set #player4_set, player5_set, player6_set
 
 # build_obj_sets means the goal
@@ -222,10 +207,7 @@ def build_obj_sets():
     player1_obj = [[16, 12], [15, 11], [15, 13], [14, 10], [14, 14], [14, 12], [13, 9], [13, 15], [13, 13], [13, 11]]
     player2_obj = [[4, 0], [4, 2], [5, 1], [4, 4], [6, 2], [5, 3], [4, 6], [7, 3], [6, 4], [5, 5]]
     player3_obj = [[4, 24], [5, 23], [4, 22], [6, 22], [4, 20], [5, 21], [7, 21], [4, 18],  [5, 19], [6, 20]]
-    #player4_obj = [[0, 12], [1, 13], [1, 11], [2, 14], [2, 10], [2, 12], [3, 15], [3, 9], [3, 11], [3, 13]]
-    #player5_obj = [[4, 24], [5, 23], [4, 22], [6, 22], [4, 20], [5, 21], [7, 21], [4, 18],  [5, 19], [6, 20]]
-    #player6_obj = [[12, 24], [12, 22], [11, 23], [12, 20], [10, 22], [11, 21], [12, 18], [9, 21], [10, 20], [11, 19]]
-
+    
     return player1_obj, player2_obj, player3_obj # player4_obj, player5_obj, player6_obj
 
 # build_invalid_homes_sets means the area each player cannot go in
@@ -235,10 +217,7 @@ def build_invalid_homes_sets(player1_set, player2_set, player3_set, player1_obj,
     player1_invalid_house = player2_set + player2_obj + player3_set + player3_obj
     player2_invalid_house = player1_set + player1_obj + player3_set + player3_obj
     player3_invalid_house = player2_set + player2_obj + player1_set + player1_obj
-    #player4_invalid_house = player5_set + player5_obj + player6_set + player6_obj
-    #player5_invalid_house = player4_set + player4_obj + player3_set + player3_obj
-    #player6_invalid_house = player4_set + player4_obj + player5_set + player5_obj
-
+    
     return player1_invalid_house, player2_invalid_house, player3_invalid_house# player4_invalid_house, player5_invalid_house, player6_invalid_house
 
 # assign_set will return the current player's set according to the game order
@@ -252,12 +231,6 @@ def assign_set(player_turn, player1_set, player2_set, player3_set):# player4_set
         set_player = player2_set
     if player_turn == 3:
         set_player = player3_set
-    #if player_turn == 4:
-    #    set_player = player4_set
-    #if player_turn == 5:
-    #    set_player = player5_set
-    #if player_turn == 6:
-    #    set_player = player6_set
 
     return set_player
 
@@ -272,12 +245,6 @@ def assign_obj_set(player_turn, player1_obj, player2_obj, player3_obj):#player4_
         obj_set = player2_obj
     if player_turn == 3:
         obj_set = player3_obj
-    #if player_turn == 4:
-    #    obj_set = player4_obj
-    #if player_turn == 5:
-    #    obj_set = player5_obj
-    #if player_turn == 6:
-    #    obj_set = player6_obj
 
     return obj_set
 
@@ -292,12 +259,6 @@ def assign_invalid_homes_set(player_turn, player1_invalid_home, player2_invalid_
         invalid_homes_set = player2_invalid_home
     if player_turn == 3:
         invalid_homes_set = player3_invalid_home
-    #if player_turn == 4:
-    #    invalid_homes_set = player4_invalid_home
-    #if player_turn == 5:
-    #    invalid_homes_set = player5_invalid_home
-    #if player_turn == 6:
-    #    invalid_homes_set = player6_invalid_home
 
     return invalid_homes_set
 
@@ -310,41 +271,21 @@ def update_player_set(set_pieces, player_turn, player1_set, player2_set, player3
         player2_set = set_pieces
     if player_turn == 3:
         player3_set = set_pieces
-    #if player_turn == 4:
-    #    player4_set = set_pieces
-    #if player_turn == 5:
-    #    player5_set = set_pieces
-    #if player_turn == 6:
-    #    player6_set = set_pieces
 
     return player1_set, player2_set, player3_set# player4_set, player5_set, player6_set
 
 # check whether the moves are legal
 def find_all_legal_moves(board, set_pieces, obj_set, invalid_homes_set):
-#def find_all_legal_moves(board, set_pieces, obj_set, invalid_set, invalid_homes_set):
 
     valid_moves = []
 
     # this for loop means find all moves (no matter moves is valid or not)
     for piece in set_pieces:
 
-        #if piece not in obj_set:
         color_board = np.full(board.shape, NOT_VISITED)
         valid_moves = check_moves(board, color_board, piece, 0, piece, valid_moves)
-        #else:
-            #print("- GOAL: piece", piece, "in obj position")
 
-    #print("--- Legal moves:          ", valid_moves)
-    #print("----- len", len(valid_moves))
-    #print("--- Invalid set:          ", invalid_set)
-
-    #valid_moves = valid_move_in_house(valid_moves, invalid_set, obj_set)
     valid_moves = valid_move_in_house(valid_moves, obj_set)
-
-
-    #print("--- Legal moves after IS: ", valid_moves)
-    #print("----- len", len(valid_moves))
-
     valid_moves = dont_stop_in_house(valid_moves, invalid_homes_set)
 
     return valid_moves

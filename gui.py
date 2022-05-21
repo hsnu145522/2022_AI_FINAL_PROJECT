@@ -81,14 +81,6 @@ class Display_surface:
             pg.draw.circle(self.display_surface, PLAYER2_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
         if board_value == 3:
             pg.draw.circle(self.display_surface, PLAYER3_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-        '''
-        if board_value == 4:
-            pg.draw.circle(display_surface, PLAYER4_BLUE, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-        if board_value == 5:
-            pg.draw.circle(display_surface, PLAYER5_GREEN, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-        if board_value == 6:
-            pg.draw.circle(display_surface, PLAYER6_YELLOW, (x_coord, y_coord), CIRCLE_RADIUS, 0)
-        '''
 
     def color_destination(self, x_coord_long, y_coord, row, circle_in_a_row, destinations):
 
