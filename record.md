@@ -11,3 +11,9 @@ TODO:
 - Use DQN to construct NN model. (Like HW4, try 100 or 200 games for training, then combat with other type of agents)
 - First, try to define state, nextstate, rewards as alpha-bata prune does, which is computing the average distance of pieces.
 - Player 8 was late for 2 hours.
+
+
+## 2022/05/22
+- state/observation: board
+- reward: distance
+- action_dim: ?? (depends on state)
