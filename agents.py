@@ -1,6 +1,7 @@
 import math
 from util import *
 import copy
+# from DQN import *
 
 class Agent:
     def __init__(self):
@@ -206,3 +207,39 @@ class AlphaBetaAgent(Agent):
                     (p1_avg_distance - pturn_avg_distance)) / 2
         
         return score
+
+class DQNAgent(Agent):
+    def __init__(self, epsilon=0.05, learning_rate=0.0002, GAMMA=0.97, batch_size=32, capacity=10000):
+        super().__init__(self)
+        self.epsilon = epsilon
+        self.learning_rate = learning_rate
+        self.gamma = GAMMA
+        self.batch_size = batch_size
+        self.capacity = capacity
+
+        self.buffer = replay_buffer(self.capacity)
+        self.evaluate_net = Net(self.n_actions)  # the evaluate network
+        self.target_net = Net(self.n_actions)  # the target network
+
+        self.optimizer = torch.optim.Adam(
+        self.evaluate_net.parameters(), lr=self.learning_rate)
+
+    def choose_action(self, state, legal_moves):
+        with torch.no_grad():
+            random_number = np.random.uniform(0, 1)
+            if random_number < self.epsilon: # 隨機
+                action = random.sample(legal_moves, 1)
+            else: # 根據現有 policy 做最好的選擇
+                tensor_state = torch.FloatTensor(state)
+                action = torch.argmax(self.evaluate_net.forward(tensor_state))
+        return action
+
+    def test(self):
+        
+        random.seed(SEED)
+        os.environ['PYTHONHASHSEED'] = str(SEED)
+        np.random.seed(SEED)
+        torch.manual_seed(SEED)
+        env = CheckerGame(auto=True, gui=False, seed=SEED) # gym.make('CartPole-v0')
+        # testing section:
+        test(env)

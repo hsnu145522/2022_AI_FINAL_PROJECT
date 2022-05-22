@@ -7,6 +7,8 @@ import random
 from collections import deque
 import os
 from tqdm import tqdm
+from game import CheckerGame
+#from agents import Agent
 total_rewards = []
 
 
@@ -61,7 +63,8 @@ class Net(nn.Module):
 
     def __init__(self,  num_actions, hidden_layer_size=50):
         super(Net, self).__init__()
-        self.input_state = 4  # the dimension of state space
+        # self.input_state = 4  # the dimension of state space
+        self.input_state = 17 * 25  # the dimension of state space
         self.num_actions = num_actions  # the dimension of action space
         self.fc1 = nn.Linear(self.input_state, 32)  # input layer
         self.fc2 = nn.Linear(32, hidden_layer_size)  # hidden layer
@@ -83,8 +86,8 @@ class Net(nn.Module):
         return q_values
 
 
-class Agent():
-    def __init__(self, env, epsilon=0.05, learning_rate=0.0002, GAMMA=0.97, batch_size=32, capacity=10000):
+class DQNAgent(Agent):
+    def __init__(self, epsilon=0.05, learning_rate=0.0002, GAMMA=0.97, batch_size=32, capacity=10000):
         """
         The agent learning how to control the action of the cart pole.
         
@@ -95,7 +98,7 @@ class Agent():
             batch_size: the number of samples which will be propagated through the neural network
             capacity: the size of the replay buffer/memory
         """
-        self.env = env
+        self.env = CheckerGame(auto=True, gui=False)
         self.n_actions = 2  # the number of actions
         self.count = 0  # recording the number of iterations
 
@@ -251,7 +254,7 @@ def train(env):
     Returns:
         None (Don't need to return anything)
     """
-    agent = Agent(env)
+    agent = DQNAgent()
     episode = 1000
     rewards = []
     for _ in tqdm(range(episode)):
@@ -285,7 +288,7 @@ def test(env):
         None (Don't need to return anything)
     """
     rewards = []
-    testing_agent = Agent(env)
+    testing_agent = DQNAgent()
     testing_agent.target_net.load_state_dict(torch.load("./Tables/DQN.pt"))
     for _ in range(100):
         state = env.reset()
@@ -320,11 +323,10 @@ if __name__ == "__main__":
     '''
     # Please change to the assigned seed number in the Google sheet
     SEED = 110
-
-    env = gym.make('CartPole-v0')
+    env = CheckerGame(auto=True, gui=False, seed=SEED) # gym.make('CartPole-v0')
     seed(SEED)
-    env.seed(SEED)
-    env.action_space.seed(SEED)
+    # env.seed(SEED)
+    # env.action_space.seed(SEED)
         
     if not os.path.exists("./Tables"):
         os.mkdir("./Tables")
@@ -334,11 +336,11 @@ if __name__ == "__main__":
         print(f"#{i + 1} training progress")
         train(env)
     # testing section:
-    test(env)
+    # test(env)
     
     if not os.path.exists("./Rewards"):
         os.mkdir("./Rewards")
 
     np.save("./Rewards/DQN_rewards.npy", np.array(total_rewards))
 
-    env.close()
+    # env.close()
