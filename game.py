@@ -1,32 +1,30 @@
-# TODO add player turn in-game
-# TODO fix rebuild of interface every damn turn
-# TODO won screen + stats
-# TODO interface not responding if i dont move cursor on it -> maybe insert FPS?
-# TODO reorder functions files
-
 # import numpy as np
 import sys
 from pygame.locals import *
 import pygame as pg
 import random
-from action import *
+# from DQN import DQNAgent
 from util import *
 from gui import Display_surface
 from agents import GreedyAgent
 from agents import AlphaBetaAgent
+from agents import DQNAgent
 import argparse
 
 
 next_move = USEREVENT + 1
 
 class CheckerGame:
-    def __init__(self, auto=False):
+    def __init__(self, auto=False, gui=False, seed=100):
         self.p1 = AlphaBetaAgent(depth=1)
         self.p2 = AlphaBetaAgent(depth=2)
+        # self.p2 = DQNAgent()
         self.p3 = GreedyAgent()
         self.p1.obj, self.p2.obj, self.p3.obj = build_obj_sets()
         self.total = 0
         self.auto = auto
+        self.gui = gui  
+        random.seed(seed)
         self.reset()
 
     def reset(self):
@@ -34,7 +32,8 @@ class CheckerGame:
         self.p1.invalid, self.p2.invalid, self.p3.invalid = build_invalid_homes_sets(self.p1.set, self.p2.set, self.p3.set, self.p1.obj, self.p2.obj, self.p3.obj)
 
         self.board = build_board()
-        self.display_surface = Display_surface()
+
+        self.display_surface = Display_surface(self.gui)
 
         # player decision
         self.player_turn = random.randint(1, 3)
@@ -51,6 +50,8 @@ class CheckerGame:
         event = pg.event.Event(next_move)
         pg.event.post(event)
 
+        return self.board
+
     def check_win(self, set_pieces, obj_set):
 
         for piece in set_pieces:
@@ -63,12 +64,15 @@ class CheckerGame:
             return self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
         elif self.player_turn == 2:
             return self.p2.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            # TODO 
+            # return self.p2.choose_action(self.board, legal_moves)
         elif self.player_turn == 3:
             return self.p3.choose_action(self.board, legal_moves)
 
     def run(self):
         while True:
-            self.display_surface.draw_board(self.board)
+            if self.gui:
+                self.display_surface.draw_board(self.board)
             for event in pg.event.get():
                 if event.type == QUIT or (event.type == pg.KEYDOWN and event.key == ord("q")):
                     pg.quit()
@@ -125,8 +129,9 @@ class CheckerGame:
                         break
 
                     # highlight the move chosen
-                    self.display_surface.highlight_best_move(best_move)
-                    pg.display.update()
+                    if self.gui:
+                        self.display_surface.highlight_best_move(best_move)
+                        pg.display.update()
 
                     # do the best move
                     self.board, set_pieces = do_move(self.board, best_move, set_pieces)
@@ -165,6 +170,6 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--gui', action='store_true', default=False ,help='show gui')
     args = parser.parse_args()
 
-    game = CheckerGame(args.auto)
+    game = CheckerGame(args.auto, args.gui)
     game.run()
 

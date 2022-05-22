@@ -25,14 +25,15 @@ WINDOW_WIDTH = (H_MARGIN_DISTANCE * 2) + (CIRCLE_DIAMETER * 13) + (H_SPACING * 1
 WINDOW_HEIGHT = (V_MARGIN_DISTANCE * 2) + (CIRCLE_DIAMETER * 17) + (V_SPACING * 16)
 
 class Display_surface:
-    def __init__(self):
-        self.display_surface = self.init_board()
+    def __init__(self, gui=False):
+        self.display_surface = self.init_board(gui)
 
-    def init_board(self):
+    def init_board(self, gui):
         pg.init()
-        display_surface = pg.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        pg.display.set_caption('Chinese Checkers AI')
-        return display_surface
+        if gui:
+            display_surface = pg.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+            pg.display.set_caption('Chinese Checkers AI')
+            return display_surface
 
     def draw_board(self,board):
 
