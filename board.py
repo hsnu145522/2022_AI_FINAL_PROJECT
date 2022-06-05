@@ -2,7 +2,18 @@ import numpy as np
 
 class Board:
     def __init__(self):
-        self.board = self.build_board()
+        self.build_board()
+        self.hashKey = 0
+        self.zobristArray = np.random.random_integers(1e18, size=(3, 17, 25))
+
+    def getHashKey(self):
+        return self.hashKey
+
+    def updateHashKey(self, player_turn, move):
+        #print(move)
+        self.hashKey ^= self.zobristArray[player_turn - 1, move[0][0], move[0][1]]
+        self.hashKey ^= self.zobristArray[player_turn - 1, move[1][0], move[1][1]]
+
     def build_board(self):
         self.board = np.zeros((17, 25)) # the board is 17*25
         # 17 means rows and 25 means columns

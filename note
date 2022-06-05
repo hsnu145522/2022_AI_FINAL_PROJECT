@@ -1,0 +1,22 @@
+Give a negative reward for taking an invalid action (but do nothing in that case, that is to say the game state should stay the same)
+
+The point is to ensure that they are not considered when choosing an action to take (or looking at the maximum action value from a state for updates). So for example, if you are using a max or argmax function to select, then set the unwanted values to -inf before running it
+
+https://proceedings.neurips.cc/paper/2018/file/645098b086d2f9e1e0e939c27f9f2d6f-Paper.pdf
+
+https://xbpeng.github.io/projects/DeepMimic/index.html
+
+https://github.com/hill-a/stable-baselines/issues/212
+
+https://github.com/hill-a/stable-baselines/issues/351
+
+    Make your reward function binary: +1 for valid actions, -1 for invalid actions (and take an action randomly when stepping), then train for as long as needed to teach the agent 'the rules of the game'. Save that agent, then revert to your regular reward function (with invalid actions still producing high negative rewards and stepping with random valid actions), load and continue training your agent.
+
+    Extract the action probabilities (I'm assuming your action space is discrete), and choose the valid action with the highest probability.
+    
+    
+    Keep the action space constant (because otherwise I don't think RL algo are made for changing action space)
+    Give a negative reward for taking an invalid action (but do nothing in that case, that is to say the game state should stay the same)
+    Stop the game early if too much invalid actions are taken
+
+

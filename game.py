@@ -1,37 +1,43 @@
-# import numpy as np
+import numpy as np
 import sys
 from pygame.locals import *
 import pygame as pg
 import random
-# from DQN import DQNAgent
+from board import Board
 from util import *
 from gui import Display_surface
 from agents import GreedyAgent
 from agents import AlphaBetaAgent
-from agents import DQNAgent
+from agents import AlphaBetaTTAgent
 import argparse
+import time
 
 
 next_move = USEREVENT + 1
 
 class CheckerGame:
     def __init__(self, auto=False, gui=False, seed=100):
-        self.p1 = AlphaBetaAgent(depth=1)
-        self.p2 = AlphaBetaAgent(depth=2)
-        # self.p2 = DQNAgent()
+        self.p1 = AlphaBetaTTAgent(depth=3)
+        self.p2 = AlphaBetaAgent(depth=3)
         self.p3 = GreedyAgent()
         self.p1.obj, self.p2.obj, self.p3.obj = build_obj_sets()
         self.total = 0
         self.auto = auto
-        self.gui = gui  
+        self.gui = gui
+        self.time = [0, 0, 0]
+        
+
         random.seed(seed)
+        np.random.seed(seed)
+
         self.reset()
 
     def reset(self):
         self.p1.set, self.p2.set, self.p3.set = build_sets()
         self.p1.invalid, self.p2.invalid, self.p3.invalid = build_invalid_homes_sets(self.p1.set, self.p2.set, self.p3.set, self.p1.obj, self.p2.obj, self.p3.obj)
 
-        self.board = build_board()
+        # self.board = build_board()
+        self.board = Board()
 
         self.display_surface = Display_surface(self.gui)
 
@@ -50,7 +56,8 @@ class CheckerGame:
         event = pg.event.Event(next_move)
         pg.event.post(event)
 
-        return self.board
+        return self.board.board
+
 
     def check_win(self, set_pieces, obj_set):
 
@@ -60,19 +67,22 @@ class CheckerGame:
         return True
 
     def choose_action(self, legal_moves):
-        if self.player_turn == 1:
-            return self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
-        elif self.player_turn == 2:
-            return self.p2.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
-            # TODO 
-            # return self.p2.choose_action(self.board, legal_moves)
-        elif self.player_turn == 3:
-            return self.p3.choose_action(self.board, legal_moves)
+        start = time.time()
+        if self.player_turn == 1: # AlphaBetaTT
+            action = self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+        elif self.player_turn == 2: # AlphaBeta
+            action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+        elif self.player_turn == 3: # Greedy
+            action = self.p3.choose_action(self.board.board, legal_moves)
+        end = time.time()
+
+        self.time[self.player_turn - 1] += end - start
+        return action
 
     def run(self):
         while True:
             if self.gui:
-                self.display_surface.draw_board(self.board)
+                self.display_surface.draw_board(self.board.board)
             for event in pg.event.get():
                 if event.type == QUIT or (event.type == pg.KEYDOWN and event.key == ord("q")):
                     pg.quit()
@@ -101,7 +111,7 @@ class CheckerGame:
                     # assign objective set of positions
                     obj_set = assign_obj_set(self.player_turn, self.p1.obj, self.p2.obj, self.p3.obj)
                     # find all legal moves given a piece set of a player
-                    all_legal_moves = find_all_legal_moves(self.board, set_pieces, obj_set, invalid_homes_set)
+                    all_legal_moves = find_all_legal_moves(self.board.board, set_pieces, obj_set, invalid_homes_set)
 
                     # last step
                     last_pair = [i for i in set_pieces + obj_set if i not in set_pieces or i not in obj_set]
@@ -119,6 +129,7 @@ class CheckerGame:
                         if best_move is None:
                             best_move = self.choose_action(all_legal_moves)
                     else:
+                        # print('move')
                         best_move = self.choose_action(all_legal_moves)
                         
                     if best_move is None:
@@ -128,13 +139,15 @@ class CheckerGame:
                         print('[]------------------[]')
                         break
 
+                    self.board.updateHashKey(self.player_turn, best_move)
+
                     # highlight the move chosen
                     if self.gui:
                         self.display_surface.highlight_best_move(best_move)
                         pg.display.update()
 
                     # do the best move
-                    self.board, set_pieces = do_move(self.board, best_move, set_pieces)
+                    self.board.board, set_pieces = do_move(self.board.board, best_move, set_pieces)
 
                     # update set
                     self.p1.set, self.p2.set, self.p3.set = \
@@ -156,6 +169,7 @@ class CheckerGame:
                         print('Player 2(G) wins:', self.p2.win_cnt, f'({round(100 * self.p2.win_cnt / self.total, 3)}%)')
                         print('Player 3(Y) wins:', self.p3.win_cnt, f'({round(100 * self.p3.win_cnt / self.total, 3)}%)')
                         print('total games played:', self.total)
+                        print('Player 1: ', self.time[0], ';Player 2: ', self.time[1], ';Player 3: ', self.time[2])
                         print('[]------------------[]')
 
                         self.reset()
