@@ -222,7 +222,6 @@ class AlphaBetaTTAgent(Agent):
     def __init__(self, depth=1):
         super().__init__()
         self.depth = depth
-        self.HashKey = 0
         self.transposition_table = [None for _ in range(1000000)] 
     
     def getTTEntry(self, key):

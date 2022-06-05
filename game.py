@@ -17,14 +17,18 @@ next_move = USEREVENT + 1
 
 class CheckerGame:
     def __init__(self, auto=False, gui=False, seed=100):
-        self.p1 = AlphaBetaTTAgent(depth=3)
-        self.p2 = AlphaBetaAgent(depth=3)
+        # self.p1 = AlphaBetaTTAgent(depth=2)
+        self.p1 = AlphaBetaAgent(depth=2)
+        self.p2 = AlphaBetaAgent(depth=2)
         self.p3 = GreedyAgent()
         self.p1.obj, self.p2.obj, self.p3.obj = build_obj_sets()
         self.total = 0
         self.auto = auto
         self.gui = gui
         self.time = [0, 0, 0]
+
+        self.time_alphabetaTT = 0
+        self.time_alphabeta = 0
         
 
         random.seed(seed)
@@ -53,6 +57,8 @@ class CheckerGame:
         self.first_round = True
         self.save_first_p = 100
 
+        self.time = [0, 0, 0]
+
         event = pg.event.Event(next_move)
         pg.event.post(event)
 
@@ -69,7 +75,8 @@ class CheckerGame:
     def choose_action(self, legal_moves):
         start = time.time()
         if self.player_turn == 1: # AlphaBetaTT
-            action = self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            action =  self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            #action = self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
         elif self.player_turn == 2: # AlphaBeta
             action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
         elif self.player_turn == 3: # Greedy
@@ -170,6 +177,14 @@ class CheckerGame:
                         print('Player 3(Y) wins:', self.p3.win_cnt, f'({round(100 * self.p3.win_cnt / self.total, 3)}%)')
                         print('total games played:', self.total)
                         print('Player 1: ', self.time[0], ';Player 2: ', self.time[1], ';Player 3: ', self.time[2])
+
+                        if (self.time[0] > self.time[1]):
+                            self.time_alphabetaTT += 1
+                        else:
+                            self.time_alphabeta += 1
+
+                        print('time_alphabetaTT:', self.time_alphabetaTT)
+                        print('time_alphabeta:', self.time_alphabeta)
                         print('[]------------------[]')
 
                         self.reset()
