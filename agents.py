@@ -3,6 +3,7 @@ from util import *
 import copy
 from board import *
 import time
+import random
 
 class Agent:
     def __init__(self):
@@ -10,6 +11,7 @@ class Agent:
         self.set = []
         self.obj = []
         self.invalid = []
+        self.visited_node = 0
 
 class GreedyAgent(Agent):
     def __init__(self):
@@ -68,6 +70,7 @@ class AlphaBetaAgent(Agent):
         return action
 
     def alphabeta(self, board, depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta):
+        self.visited_node += 1
 
         current_board = board[:][:]
 
@@ -241,15 +244,27 @@ class AlphaBetaTTAgent(Agent):
         return action
 
     def alphabeta(self, board, depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta):
+        self.visited_node += 1
 
         current_board = copy.copy(board)
         current_board.board = copy.copy(board.board)
 
         tte = self.getTTEntry(board.getHashKey())
 
+        set_pieces = assign_set(player, player1_set, player2_set, player3_set)
+
+        obj_set = assign_obj_set(player, player1_obj, player2_obj, player3_obj)
+
+        inv_homes_set = assign_invalid_homes_set(player, player1_inv_homes, player2_inv_homes, player3_inv_homes)
+
+        valid_moves = find_all_legal_moves(current_board.board, set_pieces, obj_set, inv_homes_set)
+
+        if len(valid_moves) < 1:
+            print("Error: no valid moves")
+
         if tte != None and tte.depth >= depth:
             if tte.type == EXACT:
-                return tte.value, None
+                return tte.value, valid_moves[random.randint(0, len(valid_moves) - 1)]
 
             if tte.type == LOWERBOUND and tte.value > alpha:
                 alpha = tte.value
@@ -257,7 +272,7 @@ class AlphaBetaTTAgent(Agent):
                 beta = tte.value
 
             if alpha >= beta:
-                return tte.value, None
+                return tte.value, valid_moves[random.randint(0, len(valid_moves) - 1)]
 
         if depth == 0:
             board_score = self.calculate_board_score(first_player, player1_set, player2_set, player3_set)
@@ -267,15 +282,7 @@ class AlphaBetaTTAgent(Agent):
                 self.storeTTEntry(board.getHashKey(), board_score, UPPERBOUND, depth)
             else:
                 self.storeTTEntry(board.getHashKey(), board_score, EXACT, depth)
-            return board_score, None
-
-        set_pieces = assign_set(player, player1_set, player2_set, player3_set)
-
-        obj_set = assign_obj_set(player, player1_obj, player2_obj, player3_obj)
-
-        inv_homes_set = assign_invalid_homes_set(player, player1_inv_homes, player2_inv_homes, player3_inv_homes)
-
-        valid_moves = find_all_legal_moves(current_board.board, set_pieces, obj_set, inv_homes_set)
+            return board_score, valid_moves[random.randint(0, len(valid_moves) - 1)]
 
         scores = []
         moves = []
