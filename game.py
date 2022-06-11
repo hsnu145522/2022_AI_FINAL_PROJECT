@@ -11,25 +11,25 @@ from agents import AlphaBetaAgent
 from agents import AlphaBetaTTAgent
 import argparse
 import time
+import copy
 
 
 next_move = USEREVENT + 1
 
 class CheckerGame:
     def __init__(self, auto=False, gui=False, seed=100):
-        # self.p1 = AlphaBetaTTAgent(depth=2)
-        self.p1 = AlphaBetaAgent(depth=2)
+        self.p1 = AlphaBetaAgent(depth=3)
+        self.p1_2 = AlphaBetaTTAgent(depth=3)
         self.p2 = AlphaBetaAgent(depth=2)
         self.p3 = GreedyAgent()
         self.p1.obj, self.p2.obj, self.p3.obj = build_obj_sets()
         self.total = 0
         self.auto = auto
         self.gui = gui
-        self.time = [0, 0, 0]
+        self.p1_time_compare = [0, 0]
 
-        self.time_alphabetaTT = 0
-        self.time_alphabeta = 0
-        
+        self.p1_2.obj = self.p1.obj
+        #self.p1_2.obj = copy.copy(self.p1.obj)
 
         random.seed(seed)
         np.random.seed(seed)
@@ -39,6 +39,11 @@ class CheckerGame:
     def reset(self):
         self.p1.set, self.p2.set, self.p3.set = build_sets()
         self.p1.invalid, self.p2.invalid, self.p3.invalid = build_invalid_homes_sets(self.p1.set, self.p2.set, self.p3.set, self.p1.obj, self.p2.obj, self.p3.obj)
+
+        self.p1_2.set = self.p1.set
+        self.p1_2.invalid = self.p1.invalid
+        #self.p1_2.set = copy.copy(self.p1.set)
+        #self.p1_2.invalid = copy.copy(self.p1.invalid)
 
         # self.board = build_board()
         self.board = Board()
@@ -57,7 +62,7 @@ class CheckerGame:
         self.first_round = True
         self.save_first_p = 100
 
-        self.time = [0, 0, 0]
+        self.p1_time_compare = [0, 0]
 
         event = pg.event.Event(next_move)
         pg.event.post(event)
@@ -73,17 +78,42 @@ class CheckerGame:
         return True
 
     def choose_action(self, legal_moves):
-        start = time.time()
-        if self.player_turn == 1: # AlphaBetaTT
-            action =  self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
-            #action = self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+        
+        if self.player_turn == 1: # compare
+            # AlphaBeta ============================================
+            start = time.time() 
+            action_alphaBeta = self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            end = time.time()
+            self.p1_time_compare[0] += end - start
+            # =======================================================
+
+            # AlphaBetaTT ============================================
+            start = time.time()
+            action_alphaBetaTT = self.p1_2.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            end = time.time()
+            self.p1_time_compare[1] += end - start
+            # =======================================================
+
+            if action_alphaBetaTT[0] not in self.p1_2.set:
+                print(action_alphaBetaTT)
+                print("Error")
+                exit()
+            print(action_alphaBetaTT)
+            print("p1.set", self.p1.set)
+            print("p1_2.set", self.p1_2.set)
+
+            print("alphaBeta:", action_alphaBeta, "TT:", action_alphaBetaTT)
+            for _action in action_alphaBeta:
+                if _action not in action_alphaBetaTT:
+                    print("Error: alphaBeta and alphaBetaTT are not the same.")
+                    break
+
+            action = action_alphaBetaTT
         elif self.player_turn == 2: # AlphaBeta
             action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
         elif self.player_turn == 3: # Greedy
             action = self.p3.choose_action(self.board.board, legal_moves)
-        end = time.time()
-
-        self.time[self.player_turn - 1] += end - start
+        
         return action
 
     def run(self):
@@ -120,6 +150,9 @@ class CheckerGame:
                     # find all legal moves given a piece set of a player
                     all_legal_moves = find_all_legal_moves(self.board.board, set_pieces, obj_set, invalid_homes_set)
 
+                    # copy
+                    self.p1_2.set = self.p1.set
+
                     # last step
                     last_pair = [i for i in set_pieces + obj_set if i not in set_pieces or i not in obj_set]
 
@@ -136,7 +169,6 @@ class CheckerGame:
                         if best_move is None:
                             best_move = self.choose_action(all_legal_moves)
                     else:
-                        # print('move')
                         best_move = self.choose_action(all_legal_moves)
                         
                     if best_move is None:
@@ -176,15 +208,9 @@ class CheckerGame:
                         print('Player 2(G) wins:', self.p2.win_cnt, f'({round(100 * self.p2.win_cnt / self.total, 3)}%)')
                         print('Player 3(Y) wins:', self.p3.win_cnt, f'({round(100 * self.p3.win_cnt / self.total, 3)}%)')
                         print('total games played:', self.total)
-                        print('Player 1: ', self.time[0], ';Player 2: ', self.time[1], ';Player 3: ', self.time[2])
 
-                        if (self.time[0] > self.time[1]):
-                            self.time_alphabetaTT += 1
-                        else:
-                            self.time_alphabeta += 1
-
-                        print('time_alphabetaTT:', self.time_alphabetaTT)
-                        print('time_alphabeta:', self.time_alphabeta)
+                        print('time_alphabeta:', self.p1_time_compare[0])
+                        print('time_alphabetaTT:', self.p1_time_compare[1])
                         print('[]------------------[]')
 
                         self.reset()
