@@ -11,7 +11,6 @@ from agents import AlphaBetaAgent
 from agents import AlphaBetaTTAgent
 import argparse
 import time
-import copy
 
 
 next_move = USEREVENT + 1
@@ -62,7 +61,7 @@ class CheckerGame:
         self.first_round = True
         self.save_first_p = 100
 
-        self.p1_time_compare = [0, 0]
+        # self.p1_time_compare = [0, 0]
 
         event = pg.event.Event(next_move)
         pg.event.post(event)
@@ -78,11 +77,11 @@ class CheckerGame:
         return True
 
     def choose_action(self, legal_moves):
-        
+        # print(self.player_turn)
         if self.player_turn == 1: # compare
             # AlphaBeta ============================================
             start = time.time() 
-            action_alphaBeta = self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            # action_alphaBeta = self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
             end = time.time()
             self.p1_time_compare[0] += end - start
             # =======================================================
@@ -93,7 +92,7 @@ class CheckerGame:
             end = time.time()
             self.p1_time_compare[1] += end - start
             # =======================================================
-
+            '''
             if action_alphaBetaTT[0] not in self.p1_2.set:
                 print(action_alphaBetaTT)
                 print("Error")
@@ -101,13 +100,13 @@ class CheckerGame:
             print(action_alphaBetaTT)
             print("p1.set", self.p1.set)
             print("p1_2.set", self.p1_2.set)
-
+            
             print("alphaBeta:", action_alphaBeta, "TT:", action_alphaBetaTT)
             for _action in action_alphaBeta:
                 if _action not in action_alphaBetaTT:
                     print("Error: alphaBeta and alphaBetaTT are not the same.")
                     break
-
+            '''
             action = action_alphaBetaTT
         elif self.player_turn == 2: # AlphaBeta
             action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
@@ -209,8 +208,10 @@ class CheckerGame:
                         print('Player 3(Y) wins:', self.p3.win_cnt, f'({round(100 * self.p3.win_cnt / self.total, 3)}%)')
                         print('total games played:', self.total)
 
-                        print('time_alphabeta:', self.p1_time_compare[0])
-                        print('time_alphabetaTT:', self.p1_time_compare[1])
+                        #print('node_alphabeta: ', self.p1.visited_node)
+                        print('node_alphabetaTT: ', self.p1_2.visited_node)
+                        #print('time_alphabeta:', self.p1_time_compare[0])
+                        #print('time_alphabetaTT:', self.p1_time_compare[1])
                         print('[]------------------[]')
 
                         self.reset()
