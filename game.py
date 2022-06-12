@@ -16,10 +16,10 @@ import time
 next_move = USEREVENT + 1
 
 class CheckerGame:
-    def __init__(self, auto=False, gui=False, seed=100):
-        self.p1 = AlphaBetaAgent(depth=2)
-        self.p1_2 = AlphaBetaTTAgent(depth=2)
-        self.p2 = AlphaBetaAgent(depth=2)
+    def __init__(self, auto=False, gui=False, d1=2, d2=2, seed=100):
+        self.p1 = AlphaBetaTTAgent(depth=d1)
+        self.p1_2 = AlphaBetaTTAgent(depth=3)
+        self.p2 = AlphaBetaAgent(depth=d2)
         self.p3 = GreedyAgent()
         self.p1.obj, self.p2.obj, self.p3.obj = build_obj_sets()
         self.total = 0
@@ -82,14 +82,14 @@ class CheckerGame:
         if self.player_turn == 1: # compare
             # AlphaBeta ============================================
             start = time.time() 
-            action_alphaBeta = self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000,self.end)
+            #action_alphaBeta = self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, float('-inf'), float('inf'), self.end)
             end = time.time()
             self.p1_time_compare[0] += end - start
             # =======================================================
 
             # AlphaBetaTT ============================================
             start = time.time()
-            #action_alphaBetaTT = self.p1_2.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000,self.end)
+            action_alphaBetaTT = self.p1.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000,self.end)
             end = time.time()
             self.p1_time_compare[1] += end - start
             # =======================================================
@@ -108,11 +108,11 @@ class CheckerGame:
                     print("Error: alphaBeta and alphaBetaTT are not the same.")
                     break
             '''
-            action = action_alphaBeta
+            action = action_alphaBetaTT
         elif self.player_turn == 2: # AlphaBeta
-            action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000,self.end)
+            action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, float('-inf'), float('inf'), self.end)
         elif self.player_turn == 3: # Greedy
-            action = self.p3.choose_action(self.board.board, legal_moves)
+            action = self.p3.choose_action(self.board.board, legal_moves) 
         
         return action
 
@@ -226,14 +226,15 @@ class CheckerGame:
                         self.total += 1
                     elif self.game_over and self.end[0] and self.end[1]:
                         print("game over.")
-
+                        print("The first player of this round:",self.save_first_p)
                         print('Player 1(R) wins:', self.p1.win_cnt, f'({round(100 * self.p1.win_cnt / self.total, 3)}%)')
                         print('Player 2(G) wins:', self.p2.win_cnt, f'({round(100 * self.p2.win_cnt / self.total, 3)}%)')
                         print('Player 3(Y) wins:', self.p3.win_cnt, f'({round(100 * self.p3.win_cnt / self.total, 3)}%)')
                         print('total games played:', self.total)
 
-                        print('average node_alphabeta: ', self.p1.visited_node/self.total)
-                        #print('average node_alphabetaTT: ', self.p1_2.visited_node/self.total)
+                        # print('average node_alphabeta: ', self.p1.visited_node/self.total)
+                        print('average node_alphabetaTT: ', self.p1.visited_node/self.total)
+                        print('average node_alphabeta: ', self.p2.visited_node/self.total)
                         #print('time_alphabeta:', self.p1_time_compare[0])
                         #print('time_alphabetaTT:', self.p1_time_compare[1])
                         print('[]------------------[]')
@@ -248,8 +249,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--auto', action='store_true', default=False ,help='run automatically')
     parser.add_argument('-g', '--gui', action='store_true', default=False ,help='show gui')
+    parser.add_argument('-p1', '--player1_depth', default=2, help='search depth of player1(alphabetaTT)')
+    parser.add_argument('-p2', '--player2_depth', default=2, help='search depth of player2(alphabeta)')
     args = parser.parse_args()
 
-    game = CheckerGame(args.auto, args.gui)
+    game = CheckerGame(auto=args.auto, gui=args.gui, d1=int(args.player1_depth), d2=int(args.player2_depth))
     game.run()
 
