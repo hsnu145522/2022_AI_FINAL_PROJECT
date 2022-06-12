@@ -284,7 +284,7 @@ def find_all_legal_moves(board, set_pieces, obj_set, invalid_homes_set):
 
         color_board = np.full(board.shape, NOT_VISITED)
         valid_moves = check_moves(board, color_board, piece, 0, piece, valid_moves)
-
+        
     valid_moves = valid_move_in_house(valid_moves, obj_set)
     valid_moves = dont_stop_in_house(valid_moves, invalid_homes_set)
 

@@ -4,7 +4,7 @@ class Board:
     def __init__(self):
         self.build_board()
         self.hashKey = 0
-        self.zobristArray = np.random.random_integers(1e18, size=(3, 17, 25))
+        self.zobristArray = np.random.random_integers(1e8, size=(3, 17, 25))
 
     def getHashKey(self):
         return self.hashKey

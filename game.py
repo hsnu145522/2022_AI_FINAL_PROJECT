@@ -17,8 +17,8 @@ next_move = USEREVENT + 1
 
 class CheckerGame:
     def __init__(self, auto=False, gui=False, seed=100):
-        self.p1 = AlphaBetaAgent(depth=3)
-        self.p1_2 = AlphaBetaTTAgent(depth=3)
+        self.p1 = AlphaBetaAgent(depth=2)
+        self.p1_2 = AlphaBetaTTAgent(depth=2)
         self.p2 = AlphaBetaAgent(depth=2)
         self.p3 = GreedyAgent()
         self.p1.obj, self.p2.obj, self.p3.obj = build_obj_sets()
@@ -57,6 +57,7 @@ class CheckerGame:
 
         # game start
         self.game_over = False
+        self.end = [False, False, False]
         self.first_turn = True
         self.first_round = True
         self.save_first_p = 100
@@ -81,14 +82,14 @@ class CheckerGame:
         if self.player_turn == 1: # compare
             # AlphaBeta ============================================
             start = time.time() 
-            # action_alphaBeta = self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            action_alphaBeta = self.p1.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000,self.end)
             end = time.time()
             self.p1_time_compare[0] += end - start
             # =======================================================
 
             # AlphaBetaTT ============================================
             start = time.time()
-            action_alphaBetaTT = self.p1_2.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            #action_alphaBetaTT = self.p1_2.choose_action(self.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000,self.end)
             end = time.time()
             self.p1_time_compare[1] += end - start
             # =======================================================
@@ -107,9 +108,9 @@ class CheckerGame:
                     print("Error: alphaBeta and alphaBetaTT are not the same.")
                     break
             '''
-            action = action_alphaBetaTT
+            action = action_alphaBeta
         elif self.player_turn == 2: # AlphaBeta
-            action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000)
+            action =  self.p2.choose_action(self.board.board, self.player_turn, self.player_turn, self.p1.set, self.p2.set, self.p3.set, -1000, 1000,self.end)
         elif self.player_turn == 3: # Greedy
             action = self.p3.choose_action(self.board.board, legal_moves)
         
@@ -127,12 +128,19 @@ class CheckerGame:
                 elif event.type == pg.KEYDOWN and event.key == ord("r"):
                     self.reset()
 
-                elif not self.game_over and (event.type == next_move or (event.type == pg.KEYDOWN and event.key == ord("a"))):
+                elif not(self.end[0] and self.end[1]) and (event.type == next_move or (event.type == pg.KEYDOWN and event.key == ord("a"))):
+                    
                     # change player turn
                     self.player_turn += 1
                     if self.player_turn == 4:
                         self.player_turn = 1
-
+                    #print(self.player_turn)
+                    if self.end[self.player_turn-1]:
+                        #print(self.player_turn, " already done.")
+                        if self.auto:
+                            event = pg.event.Event(next_move)
+                            pg.event.post(event)                        
+                        continue
                     # randomize first move
                     if self.player_turn == self.save_first_p:
                         self.first_round = False
@@ -192,31 +200,47 @@ class CheckerGame:
                         update_player_set(set_pieces, self.player_turn, self.p1.set, self.p2.set, self.p3.set)
 
                     # check if the player has won
-                    self.game_over = self.check_win(set_pieces, obj_set)
+                    self.end[self.player_turn-1] = self.check_win(set_pieces, obj_set)
+                    # if self.end[self.player_turn-1]:
+                    #     print(self.player_turn, " ends.")
+                    #     for f in self.end:
+                    #         if f:
+                    #             print("True ",end="")
+                    #         else:
+                    #             print("False", end="")
+                    #         print()
+                    #     if all(f for f in self.end):
+                    #         print("yes")
+                    #     else:
+                    #         print("NO")
 
-                    if self.game_over:
+                    if not(self.game_over) and self.end[self.player_turn-1]:
+                        print("player",self.player_turn," wins.")
+                        self.game_over = True
                         if self.player_turn == 1:
                             self.p1.win_cnt += 1
                         elif self.player_turn == 2:
                             self.p2.win_cnt += 1
                         elif self.player_turn == 3:
                             self.p3.win_cnt += 1
-
                         self.total += 1
+                    elif self.game_over and self.end[0] and self.end[1]:
+                        print("game over.")
+
                         print('Player 1(R) wins:', self.p1.win_cnt, f'({round(100 * self.p1.win_cnt / self.total, 3)}%)')
                         print('Player 2(G) wins:', self.p2.win_cnt, f'({round(100 * self.p2.win_cnt / self.total, 3)}%)')
                         print('Player 3(Y) wins:', self.p3.win_cnt, f'({round(100 * self.p3.win_cnt / self.total, 3)}%)')
                         print('total games played:', self.total)
 
-                        #print('node_alphabeta: ', self.p1.visited_node)
-                        print('node_alphabetaTT: ', self.p1_2.visited_node)
+                        print('average node_alphabeta: ', self.p1.visited_node/self.total)
+                        #print('average node_alphabetaTT: ', self.p1_2.visited_node/self.total)
                         #print('time_alphabeta:', self.p1_time_compare[0])
                         #print('time_alphabetaTT:', self.p1_time_compare[1])
                         print('[]------------------[]')
 
                         self.reset()
 
-                    elif self.auto:
+                    if self.auto:
                         event = pg.event.Event(next_move)
                         pg.event.post(event)
 

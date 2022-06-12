@@ -1,4 +1,7 @@
+from asyncio.windows_events import NULL
 import math
+
+from numpy import False_
 from util import *
 import copy
 from board import *
@@ -65,16 +68,16 @@ class AlphaBetaAgent(Agent):
         super().__init__()
         self.depth = depth
 
-    def choose_action(self, board, player, first_player, player1_set, player2_set, player3_set, alpha, beta):
-        _, action = self.alphabeta(board, self.depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta)
+    def choose_action(self, board, player, first_player, player1_set, player2_set, player3_set, alpha, beta,end):
+        _, action = self.alphabeta(board, self.depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta,end)
         return action
 
-    def alphabeta(self, board, depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta):
+    def alphabeta(self, board, depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta,end):
         self.visited_node += 1
 
         current_board = board[:][:]
 
-        if depth == 0:
+        if depth == 0 or end[player-1]:
             board_score = self.calculate_board_score(first_player, player1_set, player2_set, player3_set)
             return board_score, None
 
@@ -104,7 +107,7 @@ class AlphaBetaAgent(Agent):
                 if next_player == 4:
                     next_player = 1
 
-                score, useless_move = self.alphabeta(new_board, depth - 1, next_player, first_player, player1_set, player2_set, player3_set, alpha, beta)
+                score, useless_move = self.alphabeta(new_board, depth - 1, next_player, first_player, player1_set, player2_set, player3_set, alpha, beta,end)
 
                 scores.append(score)
                 moves.append(move)
@@ -135,7 +138,7 @@ class AlphaBetaAgent(Agent):
                     next_player = 1
 
                 score, useless_move = self.alphabeta(new_board, depth - 1, next_player, first_player, player1_set, player2_set,
-                                            player3_set, alpha, beta)
+                                            player3_set, alpha, beta,end)
 
                 scores.append(score)
                 moves.append(move)
@@ -239,17 +242,47 @@ class AlphaBetaTTAgent(Agent):
         tte.depth = depth
         self.transposition_table[key % len(self.transposition_table)] = tte
 
-    def choose_action(self, board, player, first_player, player1_set, player2_set, player3_set, alpha, beta):
-        _, action = self.alphabeta(board, self.depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta)
+    def choose_action(self, board, player, first_player, player1_set, player2_set, player3_set, alpha, beta,end):
+        _, action = self.alphabeta(board, self.depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta,end)
         return action
 
-    def alphabeta(self, board, depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta):
+    def alphabeta(self, board, depth, player, first_player, player1_set, player2_set, player3_set, alpha, beta,end):
         self.visited_node += 1
 
         current_board = copy.copy(board)
         current_board.board = copy.copy(board.board)
 
         tte = self.getTTEntry(board.getHashKey())
+
+
+
+        flag = False
+        flag1 = False
+
+        if tte != None and tte.depth >= depth:
+            if tte.type == EXACT:
+                flag = True
+                #return tte.value, valid_moves[random.randint(0, len(valid_moves) - 1)]
+
+            if tte.type == LOWERBOUND and tte.value > alpha:
+                alpha = tte.value
+            elif tte.type == UPPERBOUND and tte.value < beta:
+                beta = tte.value
+
+            if alpha >= beta:
+                flag = True
+                #return tte.value, valid_moves[random.randint(0, len(valid_moves) - 1)]
+
+        if depth == 0 or end[player-1]:
+            board_score = self.calculate_board_score(first_player, player1_set, player2_set, player3_set)
+            if board_score <= alpha:
+                self.storeTTEntry(board.getHashKey(), board_score, LOWERBOUND, depth)
+            elif board_score >= beta:
+                self.storeTTEntry(board.getHashKey(), board_score, UPPERBOUND, depth)
+            else:
+                self.storeTTEntry(board.getHashKey(), board_score, EXACT, depth)
+            flag1 = True
+            
 
         set_pieces = assign_set(player, player1_set, player2_set, player3_set)
 
@@ -258,32 +291,15 @@ class AlphaBetaTTAgent(Agent):
         inv_homes_set = assign_invalid_homes_set(player, player1_inv_homes, player2_inv_homes, player3_inv_homes)
 
         valid_moves = find_all_legal_moves(current_board.board, set_pieces, obj_set, inv_homes_set)
-
-        if len(valid_moves) < 1:
-            print("Error: no valid moves")
-
-        if tte != None and tte.depth >= depth:
-            if tte.type == EXACT:
-                return tte.value, valid_moves[random.randint(0, len(valid_moves) - 1)]
-
-            if tte.type == LOWERBOUND and tte.value > alpha:
-                alpha = tte.value
-            elif tte.type == UPPERBOUND and tte.value < beta:
-                beta = tte.value
-
-            if alpha >= beta:
-                return tte.value, valid_moves[random.randint(0, len(valid_moves) - 1)]
-
-        if depth == 0:
-            board_score = self.calculate_board_score(first_player, player1_set, player2_set, player3_set)
-            if board_score <= alpha:
-                self.storeTTEntry(board.getHashKey(), board_score, LOWERBOUND, depth)
-            elif board_score >= beta:
-                self.storeTTEntry(board.getHashKey(), board_score, UPPERBOUND, depth)
-            else:
-                self.storeTTEntry(board.getHashKey(), board_score, EXACT, depth)
-            return board_score, valid_moves[random.randint(0, len(valid_moves) - 1)]
-
+        
+        if end[player-1]:
+            return board_score, NULL
+        
+        #print("valid_moves: ",len(valid_moves))
+        if flag:
+            return tte.value, valid_moves[random.randint(0, len(valid_moves) - 1)]
+        if flag1:
+            return board_score, valid_moves[random.randint(0, len(valid_moves) - 1)] 
         scores = []
         moves = []
 
@@ -304,7 +320,7 @@ class AlphaBetaTTAgent(Agent):
                 if next_player == 4:
                     next_player = 1
 
-                score, useless_move = self.alphabeta(current_board_copy, depth - 1, next_player, first_player, player1_set, player2_set, player3_set, alpha, beta)
+                score, useless_move = self.alphabeta(current_board_copy, depth - 1, next_player, first_player, player1_set, player2_set, player3_set, alpha, beta,end)
 
                 scores.append(score)
                 moves.append(move)
@@ -346,7 +362,7 @@ class AlphaBetaTTAgent(Agent):
                 if next_player == 4:
                     next_player = 1
 
-                score, useless_move = self.alphabeta(current_board_copy, depth - 1, next_player, first_player, player1_set, player2_set, player3_set, alpha, beta)
+                score, useless_move = self.alphabeta(current_board_copy, depth - 1, next_player, first_player, player1_set, player2_set, player3_set, alpha, beta,end)
 
                 scores.append(score)
                 moves.append(move)
