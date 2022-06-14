@@ -8,3 +8,9 @@ python version 3.8.13
 pygame==2.1.2
 numpy==1.22.3
 ```
+## Agents
+- Greedy
+- Alpha-beta pruning
+- MTD(f)
+
+## Experiments reuslt
