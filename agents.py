@@ -23,8 +23,12 @@ class Agent:
         distance = 0
         if len(obj_available) == 0:
             return 0
-        # obj = np.average(obj_available, axis=0)
-        obj = obj_available[0]
+
+        if random.random()<0.5:
+            obj = obj_available[random.randint(0, len(obj_available)-1)]
+        else:
+            obj = np.average(obj_available, axis=0)
+        
         for piece in piece_set:
             x, y = piece
             obj_x, obj_y = obj
@@ -218,63 +222,63 @@ class AlphaBetaAgent(Agent):
             return scores[min_score_index], worst_opponent_move
 
 
-    def calculate_board_score(self, player_turn, p1_pieces, p2_pieces, p3_pieces):
+    # def calculate_board_score(self, player_turn, p1_pieces, p2_pieces, p3_pieces):
 
-        p1_avg_distance = self.find_avg_distance(p1_pieces, player1_obj, 16, 12)
-        p2_avg_distance = self.find_avg_distance(p2_pieces, player2_obj, 12, 0)
-        p3_avg_distance = self.find_avg_distance(p3_pieces, player3_obj, 4, 0)
+    #     p1_avg_distance = self.find_avg_distance(p1_pieces, player1_obj, 16, 12)
+    #     p2_avg_distance = self.find_avg_distance(p2_pieces, player2_obj, 12, 0)
+    #     p3_avg_distance = self.find_avg_distance(p3_pieces, player3_obj, 4, 0)
 
-        score = self.calculate_score(player_turn, p1_avg_distance, p2_avg_distance, p3_avg_distance)
+    #     score = self.calculate_score(player_turn, p1_avg_distance, p2_avg_distance, p3_avg_distance)
 
-        return score
-
-
-    def find_avg_distance(self, p_pieces, p_obj, p_default_x, p_default_y):
-
-        total_distance = 0
-        obj_x = p_default_x
-        obj_y = p_default_y
-        for obj_piece in p_obj:
-            if obj_piece not in p_pieces:
-                [obj_x, obj_y] = obj_piece
-                break
-
-        for piece in p_pieces:
-
-            [x, y] = piece
-
-            square_y = (y * 14.43) / 25
-            square_obj_y = (obj_y * 14.43) / 25
-
-            distance_diag = math.sqrt(((obj_x - x) ** 2) + ((square_obj_y - square_y) ** 2))
-
-            total_distance = total_distance + distance_diag
-
-        avg_distance = total_distance / 10
-
-        return avg_distance
+    #     return score
 
 
-    def calculate_score(self, player_turn, p1_avg_distance, p2_avg_distance, p3_avg_distance):
-        score = 0
+    # def find_avg_distance(self, p_pieces, p_obj, p_default_x, p_default_y):
 
-        if player_turn == 1:
-            # print("-- loop player 1")
-            pturn_avg_distance = p1_avg_distance
-            score = ((p2_avg_distance - pturn_avg_distance) +
-                    (p3_avg_distance - pturn_avg_distance)) / 2
-        elif player_turn == 2:
-            # print("-- loop player 2")
-            pturn_avg_distance = p2_avg_distance
-            score = ((p1_avg_distance - pturn_avg_distance) +
-                    (p3_avg_distance - pturn_avg_distance)) / 2
-        elif player_turn == 3:
-            # print("-- loop player 3")
-            pturn_avg_distance = p3_avg_distance
-            score = ((p2_avg_distance - pturn_avg_distance) +
-                    (p1_avg_distance - pturn_avg_distance)) / 2
+    #     total_distance = 0
+    #     obj_x = p_default_x
+    #     obj_y = p_default_y
+    #     for obj_piece in p_obj:
+    #         if obj_piece not in p_pieces:
+    #             [obj_x, obj_y] = obj_piece
+    #             break
+
+    #     for piece in p_pieces:
+
+    #         [x, y] = piece
+
+    #         square_y = (y * 14.43) / 25
+    #         square_obj_y = (obj_y * 14.43) / 25
+
+    #         distance_diag = math.sqrt(((obj_x - x) ** 2) + ((square_obj_y - square_y) ** 2))
+
+    #         total_distance = total_distance + distance_diag
+
+    #     avg_distance = total_distance / 10
+
+    #     return avg_distance
+
+
+    # def calculate_score(self, player_turn, p1_avg_distance, p2_avg_distance, p3_avg_distance):
+    #     score = 0
+
+    #     if player_turn == 1:
+    #         # print("-- loop player 1")
+    #         pturn_avg_distance = p1_avg_distance
+    #         score = ((p2_avg_distance - pturn_avg_distance) +
+    #                 (p3_avg_distance - pturn_avg_distance)) / 2
+    #     elif player_turn == 2:
+    #         # print("-- loop player 2")
+    #         pturn_avg_distance = p2_avg_distance
+    #         score = ((p1_avg_distance - pturn_avg_distance) +
+    #                 (p3_avg_distance - pturn_avg_distance)) / 2
+    #     elif player_turn == 3:
+    #         # print("-- loop player 3")
+    #         pturn_avg_distance = p3_avg_distance
+    #         score = ((p2_avg_distance - pturn_avg_distance) +
+    #                 (p1_avg_distance - pturn_avg_distance)) / 2
         
-        return score
+    #     return score
 
 
 LOWERBOUND = 0

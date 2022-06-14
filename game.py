@@ -16,7 +16,7 @@ import time
 next_move = USEREVENT + 1
 
 class CheckerGame:
-    def __init__(self, auto=False, gui=False, d1=2, d2=2, seed=100):
+    def __init__(self, auto=False, gui=False, d1=2, d2=2, seed=20):
         self.p1 = AlphaBetaTTAgent(depth=d1)
         self.p1_2 = AlphaBetaTTAgent(depth=3)
         self.p2 = AlphaBetaAgent(depth=d2)

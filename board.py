@@ -16,7 +16,6 @@ class Board:
 
     def build_board(self):
         self.board = np.zeros((17, 25)) # the board is 17*25
-        # 17 means rows and 25 means columns
         self.board[:][:] = -1
         # 1
         # set all to player 1
